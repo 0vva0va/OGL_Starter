@@ -15,7 +15,7 @@ A clean, modular C++ starter template for OpenGL graphics projects.
 ## Project Structure
 
 ```
-BMPYM_OGL_Starter/
+OGL_Starter/
 ├── Main.cpp                    # Main application entry point and render loop
 ├── Makefile                    # Build configuration (cross-platform)
 ├── External/                   # Third-party dependencies
