@@ -20,6 +20,7 @@ SHADER_DIR := Shaders
 SCRIPTS_DIR := Scripts
 BUILD_DIR := build
 OBJ_DIR := $(BUILD_DIR)/obj
+DEP_DIR := $(BUILD_DIR)/dep
 
 # --- vpath Directive ---
 vpath %.cpp $(SRC_DIR) $(INC_DIR) $(SCRIPTS_DIR) $(EXT_EXT_DIR)/glad $(EXT_EXT_DIR)/imgui
@@ -31,7 +32,7 @@ MAIN_SOURCES := $(SRC_DIR)/Main.cpp
 # Camera implementation
 CAMERA_SOURCES := $(INC_DIR)/Camera.cpp
 
-# Script sources 
+# Script sources
 SCRIPT_SOURCES := $(wildcard $(SCRIPTS_DIR)/*/*.cpp)
 
 # GLAD loader
@@ -54,6 +55,8 @@ ALL_SOURCES := $(MAIN_SOURCES) $(CAMERA_SOURCES) $(SCRIPT_SOURCES) $(GLAD_SOURCE
 OBJECTS := $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(ALL_SOURCES))
 OBJECTS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(OBJECTS))
 
+# Dependency files (one .d per .o, mirroring the obj tree under dep/)
+DEPS := $(patsubst $(OBJ_DIR)/%.o,$(DEP_DIR)/%.d,$(OBJECTS))
 
 # --- Include Paths ---
 INCLUDE_FLAGS := \
@@ -70,26 +73,31 @@ INCLUDE_FLAGS := \
 # --- Compiler Configuration ---
 CXX := g++
 CC := gcc
-CXXFLAGS := -std=c++17 -Wall -Wextra -O2 $(INCLUDE_FLAGS)
-CFLAGS := -std=c99 -Wall -O2 $(INCLUDE_FLAGS)
+
+# -MMD  : write a .d file listing header dependencies (skips system headers)
+# -MP   : add a phony target for each header so a deleted header doesn't break Make
+DEP_FLAGS = -MMD -MP -MF $(DEP_DIR)/$*.d
+
+CXXFLAGS := -std=c++20 -Wall -Wextra -O2 $(INCLUDE_FLAGS)
+CFLAGS   := -std=c99  -Wall         -O2 $(INCLUDE_FLAGS)
 
 # Platform-specific settings
 ifeq ($(DETECTED_OS),Windows)
     LDFLAGS := -lglfw3 -lopengl32 -lgdi32 -luser32 -lkernel32
 else ifeq ($(DETECTED_OS),Darwin)
-    LDFLAGS := -lglfw -framework OpenGL
-    CXXFLAGS += -fPIC
-    CFLAGS += -fPIC
+    LDFLAGS   := -lglfw -framework OpenGL
+    CXXFLAGS  += -fPIC
+    CFLAGS    += -fPIC
 else
-    LDFLAGS := -lglfw -lGL
-    CXXFLAGS += -fPIC
-    CFLAGS += -fPIC
+    LDFLAGS   := -lglfw -lGL
+    CXXFLAGS  += -fPIC
+    CFLAGS    += -fPIC
 endif
 
 # --- Targets ---
 .PHONY: all clean rebuild run help
 
-all: $(BUILD_DIR) $(OBJ_DIR) $(EXECUTABLE)
+all: $(BUILD_DIR) $(OBJ_DIR) $(DEP_DIR) $(EXECUTABLE)
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
@@ -97,22 +105,30 @@ $(BUILD_DIR):
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
+$(DEP_DIR):
+	@mkdir -p $(DEP_DIR)
+
 # Link executable
 $(EXECUTABLE): $(OBJECTS)
 	@echo "Linking $@..."
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 	@echo "✓ Build complete: $@"
 
+# Compile C++ sources — also writes dep file via DEP_FLAGS
 $(OBJ_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@) $(dir $(DEP_DIR)/$*.d)
 	@echo "Compiling $<..."
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEP_FLAGS) -c $< -o $@
 
+# Compile C sources — also writes dep file via DEP_FLAGS
 $(OBJ_DIR)/%.o: %.c
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@) $(dir $(DEP_DIR)/$*.d)
 	@echo "Compiling $<..."
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEP_FLAGS) -c $< -o $@
 
+# Pull in the auto-generated dependency rules.
+# The leading '-' suppresses errors on first build (no .d files yet).
+-include $(DEPS)
 
 # Clean build artifacts
 clean:
