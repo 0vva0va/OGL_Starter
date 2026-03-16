@@ -76,7 +76,7 @@ public:
         }
         catch (std::ifstream::failure& e)
         {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " 
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: "
                 << e.what() << std::endl;
         }
         const char* vShaderCode = vertexCode.c_str();
@@ -149,31 +149,31 @@ public:
     }
     // utility uniform functions
     // ------------------------------------------------------------------------
-    void Set_Bool(const std::string &name, bool value) const
+    void SetBool(const std::string &name, bool value) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
     }
     // ------------------------------------------------------------------------
-    void Set_Int(const std::string &name, int value) const
+    void SetInt(const std::string &name, int value) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
-    void Set_Float(const std::string &name, float value) const
+    void SetFloat(const std::string &name, float value) const
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
-    void Set_Vec2(const std::string &name, const glm::vec2 &value) const
+    void SetVec2(const std::string &name, const glm::vec2 &value) const
     {
         glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void Set_Vec2(const std::string &name, float x, float y) const
+    void SetVec2(const std::string &name, float x, float y) const
     {
         glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
     }
     // ------------------------------------------------------------------------
-    void Set_Vec3(const std::string &name, const glm::vec3 &value) const
+    void SetVec3(const std::string &name, const glm::vec3 &value) const
     {
         glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
@@ -182,26 +182,26 @@ public:
         glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
     }
     // ------------------------------------------------------------------------
-    void Set_Vec4(const std::string &name, const glm::vec4 &value) const
+    void SetVec4(const std::string &name, const glm::vec4 &value) const
     {
         glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
-    void Set_Vec4(const std::string &name, float x, float y, float z, float w)
+    void SetVec4(const std::string &name, float x, float y, float z, float w)
     {
         glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
     }
     // ------------------------------------------------------------------------
-    void Set_Mat2(const std::string &name, const glm::mat2 &mat) const
+    void SetMat2(const std::string &name, const glm::mat2 &mat) const
     {
         glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void Set_Mat3(const std::string &name, const glm::mat3 &mat) const
+    void SetMat3(const std::string &name, const glm::mat3 &mat) const
     {
         glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void Set_Mat4(const std::string &name, const glm::mat4 &mat) const
+    void SetMat4(const std::string &name, const glm::mat4 &mat) const
     {
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
